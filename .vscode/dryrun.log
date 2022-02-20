@@ -1,0 +1,7 @@
+make --dry-run --keep-going --print-directory
+make: Entering directory `/Users/immanuel/git/code/comp2la'
+ 
+make: Leaving directory `/Users/immanuel/git/code/comp2la'
+ 
+make: *** No targets specified and no makefile found.  Stop.
+ 
