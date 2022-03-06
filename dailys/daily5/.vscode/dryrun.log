@@ -1,0 +1,6 @@
+make --dry-run --always-make --keep-going --print-directory
+make: Entering directory `/Users/immanuel/git/code/comp2/daily5'
+clang -g -O0 -Wall --std=c99 -c main.c
+clang -g -O0 -Wall --std=c99 -o main main.o
+make: Leaving directory `/Users/immanuel/git/code/comp2/daily5'
+ 
