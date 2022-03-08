@@ -48,7 +48,7 @@ int main (int argc, char *argv[]) {
     check = bit_flags_check_flag(test, 101);
     assert(check == -1);
 
-    bit_flags_destroy(test);
+    bit_flags_destroy(&test);
 
     return 0;
 }

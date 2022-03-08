@@ -15,4 +15,4 @@ clean:
 	rm main $(OBJECTS)
 
 test: main
-	valgrind ./main
+	valgrind --leak-check=full ./main
