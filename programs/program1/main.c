@@ -11,8 +11,6 @@ int main (int argc, char *argv[]) {
     int check;
     Status unset;
 
-    printf("Size of unsigned int is %ld\n", sizeof(unsigned int));
-
     test = bit_flags_init_number_of_bits(80);
     assert(test != NULL);
     
@@ -20,13 +18,14 @@ int main (int argc, char *argv[]) {
     assert(size == 80);
 
     capacity = bit_flags_get_capacity(test);
-    assert(capacity == 84);
+    assert(capacity == 3*8*sizeof(unsigned int));
 
     set = bit_flags_set_flag(test, 70);
     assert(set == SUCCESS);
     set = bit_flags_set_flag(test, 90);
     assert(set == SUCCESS);
-    assert(bit_flags_get_capacity(test) == ((90/4+1))*4);
+    set = bit_flags_unset_flag(test, 76);
+    assert(set == SUCCESS);
 
     check = bit_flags_check_flag(test, 70);
     assert(check == 1);
@@ -37,10 +36,10 @@ int main (int argc, char *argv[]) {
     check = bit_flags_check_flag(test, 92);
     assert(check == -1);
 
-    unset = bit_flags_set_flag(test, 70);
+    unset = bit_flags_unset_flag(test, 70);
     assert(unset == SUCCESS);
-    unset = bit_flags_set_flag(test, 100);
-    assert(unset == FAILURE);
+    unset = bit_flags_unset_flag(test, 100);
+    assert(unset == SUCCESS);
 
     check = bit_flags_check_flag(test, 70);
     assert(check == 0);

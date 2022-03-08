@@ -22,7 +22,7 @@ BIT_FLAGS bit_flags_init_number_of_bits(int number_of_bits) {
 
     if(pBitFlags != NULL) {
         pBitFlags->size = number_of_bits;
-        pBitFlags->capacity = pBitFlags->size/sizeof(unsigned int) + 1;
+        pBitFlags->capacity = pBitFlags->size/(sizeof(unsigned int)*8) + 1;
         pBitFlags->flag_holder = (unsigned int *)calloc(pBitFlags->capacity, sizeof(unsigned int));
     }
 
@@ -40,14 +40,14 @@ int bit_flags_get_size(BIT_FLAGS hBit_flags) {
 
 int bit_flags_get_capacity(BIT_FLAGS hBit_flags) {
     Bit_Flags *pBitFlags= (Bit_Flags *)hBit_flags;
-    return pBitFlags->capacity * sizeof(unsigned int);
+    return pBitFlags->capacity * sizeof(unsigned int) * 8;
 }
 
 Status bit_flags_resize(BIT_FLAGS hBit_flags, int number_of_bits) {
     Bit_Flags *pBitFlags= (Bit_Flags*)hBit_flags;
 
     pBitFlags->size = number_of_bits;
-    pBitFlags->capacity = number_of_bits/sizeof(unsigned int) + 1;
+    pBitFlags->capacity = pBitFlags->size/(sizeof(unsigned int)*8) + 1;
     pBitFlags->flag_holder = (unsigned int*)realloc(pBitFlags->flag_holder, sizeof(unsigned int) * pBitFlags->capacity);
     if (pBitFlags->flag_holder == NULL) {
         return FAILURE;
@@ -85,11 +85,11 @@ Status bit_flags_unset_flag(BIT_FLAGS hBit_flags, int flag_position) {
 }
 
 int bit_flags_check_flag(BIT_FLAGS hBit_flags, int flag_position) {
-    Bit_Flags *pBitFlags= (Bit_Flags *)hBit_flags;
+    Bit_Flags *pBitFlags = (Bit_Flags *)hBit_flags;
     if (flag_position > pBitFlags->size) {
         return -1;
     }
-    return check_flag(hBit_flags, flag_position);
+    return check_flag(pBitFlags->flag_holder, flag_position);
 }
 
 // private functions
