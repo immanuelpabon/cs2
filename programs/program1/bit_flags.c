@@ -92,6 +92,13 @@ int bit_flags_check_flag(BIT_FLAGS hBit_flags, int flag_position) {
     return check_flag(pBitFlags->flag_holder, flag_position);
 }
 
+void bit_flags_destroy(BIT_FLAGS *phBit_flags) {
+    Bit_Flags *pBitFlags = (Bit_Flags *)(*phBit_flags);
+    free(pBitFlags->flag_holder);
+    free(pBitFlags);
+    *phBit_flags = NULL;
+}
+
 // private functions
 // take an integer and make sure that the nth bit is a 1.
 void set_flag(unsigned int flag_holder[], int flag_position) {
@@ -120,3 +127,5 @@ void unset_flag(unsigned int flag_holder[], int flag_position) {
     // flag_holder[index] = flag_holder[index]^1 << position;
     flag_holder[index] &= ~(1<<position);
 }
+
+

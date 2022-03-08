@@ -15,4 +15,4 @@ clean:
 	rm main $(OBJECTS)
 
 test: main
-	./main
+	valgrind ./main
