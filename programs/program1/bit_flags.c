@@ -21,9 +21,9 @@ BIT_FLAGS bit_flags_init_number_of_bits(int number_of_bits) {
     pBitFlags = (Bit_Flags*)malloc(sizeof(Bit_Flags));
 
     if(pBitFlags != NULL) {
-        pBitFlags->size = number_of_bits/8;
-        pBitFlags->capacity = pBitFlags->size + 1;
-        pBitFlags-> flag_holder = (unsigned int *)malloc(sizeof(unsigned int) *pBitFlags->size);
+        pBitFlags->size = number_of_bits;
+        pBitFlags->capacity = pBitFlags->size/sizeof(unsigned int) + 1;
+        pBitFlags->flag_holder = (unsigned int *)calloc(pBitFlags->capacity, sizeof(unsigned int));
     }
 
     if(pBitFlags->flag_holder == NULL) {
@@ -34,62 +34,76 @@ BIT_FLAGS bit_flags_init_number_of_bits(int number_of_bits) {
 }
 
 int bit_flags_get_size(BIT_FLAGS hBit_flags) {
-    Bit_Flags *pBitFlags= (Bit_Flags*)pBitFlags;
-    return pBitFlags->size * 8;
+    Bit_Flags *pBitFlags= (Bit_Flags *)hBit_flags;
+    return pBitFlags->size;
 }
 
 int bit_flags_get_capacity(BIT_FLAGS hBit_flags) {
-    Bit_Flags *pBitFlags= (Bit_Flags*)pBitFlags;
-    return pBitFlags->capacity;
+    Bit_Flags *pBitFlags= (Bit_Flags *)hBit_flags;
+    return pBitFlags->capacity * sizeof(unsigned int);
+}
+
+Status bit_flags_resize(BIT_FLAGS hBit_flags, int number_of_bits) {
+    Bit_Flags *pBitFlags= (Bit_Flags*)hBit_flags;
+
+    pBitFlags->size = number_of_bits;
+    pBitFlags->capacity = number_of_bits/sizeof(unsigned int) + 1;
+    pBitFlags->flag_holder = (unsigned int*)realloc(pBitFlags->flag_holder, sizeof(unsigned int) * pBitFlags->capacity);
+    if (pBitFlags->flag_holder == NULL) {
+        return FAILURE;
+    }
+
+    return SUCCESS;
 }
 
 Status bit_flags_set_flag(BIT_FLAGS hBit_flags, int flag_position) {
-    Bit_Flags *pBitFlags= (Bit_Flags*)pBitFlags;
+    Bit_Flags *pBitFlags= (Bit_Flags *)hBit_flags;
+    Status status;
+
     if (flag_position >= pBitFlags->size) {
-        pBitFlags->size += (flag_position - pBitFlags->size);
-        pBitFlags->flag_holder= (unsigned int*)realloc(pBitFlags->flag_holder, sizeof(unsigned int) * pBitFlags->capacity);
-        set_flag(pBitFlags->flag_holder, flag_position);
-        return FAILURE;
+        status = bit_flags_resize(hBit_flags, flag_position);
+        if (status != SUCCESS) {
+            return status;
+        }
     }
     set_flag(pBitFlags->flag_holder, flag_position);
     return SUCCESS;
 }
 
 Status bit_flags_unset_flag(BIT_FLAGS hBit_flags, int flag_position) {
-    Bit_Flags *pBitFlags= (Bit_Flags*)pBitFlags;
+    Bit_Flags *pBitFlags= (Bit_Flags *)hBit_flags;
+    Status status;
+
     if (flag_position >= pBitFlags->size) {
-        pBitFlags->size += (flag_position - pBitFlags->size);
-        pBitFlags->flag_holder= (unsigned int*)realloc(pBitFlags->flag_holder, sizeof(unsigned int) * pBitFlags->capacity);
-        unset_flag(pBitFlags->flag_holder, flag_position);
-        return FAILURE;
+       status = bit_flags_resize(hBit_flags, flag_position);
+       if (status != SUCCESS) {
+           return status;
+       }
     }
     unset_flag(pBitFlags->flag_holder, flag_position);
     return SUCCESS;
 }
 
 int bit_flags_check_flag(BIT_FLAGS hBit_flags, int flag_position) {
-    Bit_Flags *pBitFlags= (Bit_Flags*)pBitFlags;
-    if (flag_position >= pBitFlags->size) {
+    Bit_Flags *pBitFlags= (Bit_Flags *)hBit_flags;
+    if (flag_position > pBitFlags->size) {
         return -1;
     }
     return check_flag(hBit_flags, flag_position);
 }
 
-
-
 // private functions
 // take an integer and make sure that the nth bit is a 1.
 void set_flag(unsigned int flag_holder[], int flag_position) {
-    int index = flag_position/(sizeof(int) * 8);
-    int position = flag_position%(sizeof(int) * 8);
+    int index = flag_position/(sizeof(unsigned int) * 8);
+    int position = flag_position%(sizeof(unsigned int) * 8);
     flag_holder[index] |= 1 << position;
 }
 
-
 // return an integer that is zero when the nth bit is zero and 1 when it is 1
 int check_flag(unsigned int flag_holder[], int flag_position){
-    int index = flag_position/(sizeof(int) * 8);
-    int position = flag_position%(sizeof(int) * 8);
+    int index = flag_position/(sizeof(unsigned int) * 8);
+    int position = flag_position%(sizeof(unsigned int) * 8);
 
     if (1 << position & flag_holder[index]) {
         return 1;
@@ -101,7 +115,8 @@ int check_flag(unsigned int flag_holder[], int flag_position){
  //flip flag from 1 to a 0
 
 void unset_flag(unsigned int flag_holder[], int flag_position) {
-    int index = flag_position/(sizeof(int) * 8);
-    int position = flag_position%(sizeof(int) * 8);
-    flag_holder[index] = flag_holder[index]^1 << position;
+    int index = flag_position/(sizeof(unsigned int) * 8);
+    int position = flag_position%(sizeof(unsigned int) * 8);
+    // flag_holder[index] = flag_holder[index]^1 << position;
+    flag_holder[index] &= ~(1<<position);
 }

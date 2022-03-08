@@ -11,19 +11,22 @@ int main (int argc, char *argv[]) {
     int check;
     Status unset;
 
-   test = bit_flags_init_number_of_bits(80);
+    printf("Size of unsigned int is %ld\n", sizeof(unsigned int));
+
+    test = bit_flags_init_number_of_bits(80);
     assert(test != NULL);
     
     size = bit_flags_get_size(test);
-    assert(size == 10);
+    assert(size == 80);
 
     capacity = bit_flags_get_capacity(test);
-    assert(capacity == 11);
+    assert(capacity == 84);
 
     set = bit_flags_set_flag(test, 70);
     assert(set == SUCCESS);
     set = bit_flags_set_flag(test, 90);
-    assert(set == FAILURE);
+    assert(set == SUCCESS);
+    assert(bit_flags_get_capacity(test) == ((90/4+1))*4);
 
     check = bit_flags_check_flag(test, 70);
     assert(check == 1);
