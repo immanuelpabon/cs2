@@ -19,27 +19,29 @@ struct ferry {
     int used_size;
 };
 
-typedef void* LINKEDLIST;
+struct node {
+    struct node *next;
+    int data;
+};
 
-LINKEDLIST linkedlist_init_default(void);
+struct list {
+    struct node *head;
+    struct node *tail;
+    int count;
+};
 
-void ll_head_insert(LINKEDLIST hLinkedlist, int item);
-void ll_tail_insert(LINKEDLIST hLinkedlist, int item);
-void ll_ordered_insert(LINKEDLIST hLinkedlist, int item);
-void ll_delete(LINKEDLIST hLinkedlist, int item);
-void ll_print(LINKEDLIST hLinkedlist);
-void ll_reverse_print(LINKEDLIST hLinkedlist);
-void linkedlist_destroy(LINKEDLIST* phLinkedlist);
-
+struct list *list_new(void);
+int list_enqueue(struct list *self, int value);
+int list_serve(struct list *self);
+void list_destroy(struct list **pself);
+int list_print(struct list *self);
+int list_length(struct list *self);
+Boolean list_is_empty(struct list *self);
 void ferry_init(struct ferry *self, int size_in_meters);
 Status ferry_add_car(struct ferry *self, int car_size);
 void ferry_remove_cars(struct ferry *self);
 void clear_keyboard_buffer(void);
 
-
-#define MAXLINE 80
-
-static void usage(char *pname);
 
 int main(int argc, char *argv[]) {
     int ferry_sets;
@@ -47,13 +49,12 @@ int main(int argc, char *argv[]) {
     int i;
     int j;
     struct ferry f;
-
     
     scanf("%d", &ferry_sets);
     clear_keyboard_buffer();
     for (i=0; i < ferry_sets; i++){
-        LINKEDLIST ll_left = linkedlist_init_default();
-        LINKEDLIST ll_right = linkedlist_init_default();
+        struct list *ll_left = list_new();
+        struct list *ll_right = list_new();
         int ferry_size_in_meters;
         int ncars;
         int car_size;
@@ -65,300 +66,126 @@ int main(int argc, char *argv[]) {
 
         ferry_init(&f, ferry_size_in_meters);
 
+        /*
+         * initialize the shores
+         */
         for (j=0; j<ncars; j++) {
 
             scanf("%d %s", &car_size, shore);
             clear_keyboard_buffer();
             
             if (strcmp(shore, "left")==0) {
-                ll_tail_insert(ll_left, car_size);
+                list_enqueue(ll_left, car_size);
             } else {
-                ll_tail_insert(ll_right, car_size);
+                list_enqueue(ll_right, car_size);
             }
 
             printf("car size = %d\n", car_size);
             printf("shore = %s\n", shore);
         }
 
-        linkedlist_destroy(&ll_left);
-        linkedlist_destroy(&ll_right);
+        /*
+         * simulate the ferry
+         */
+        int counter = 0;
+        
+        list_destroy(&ll_left);
+        list_destroy(&ll_right);
     }
     
     return 0;
 }
 
+struct list *list_new(void) {
+    struct list *list;
 
-int main2(int argc, char *argv[])
-{
-    LINKEDLIST ll = linkedlist_init_default();
-    char line[MAXLINE];
-    char *p;
-    int x;
-   
+    list = (struct list *)malloc(sizeof(struct list));
 
-    if (argc > 1 && strcmp(argv[1], "-?") == 0)
-        usage(argv[0]);
-
-    while (fgets(line, MAXLINE, stdin)) {
-        printf("%s", line); 
-        
-        if ((p = strchr(line, '#'))) *p = '\0';
-        if ((p = strchr(line, '\n'))) *p = '\0';
-        p = line;
-        while (*p == ' ') p++;
-        switch (*p) {
-        case 'p':
-            ll_print(ll);
-            break;
-                
-        case 'r':
-            ll_reverse_print(ll);
-            break;
-                
-        case 'H':
-            p = strchr(p, ' ');
-            if (!p) {
-                printf("ll_head_insert - missing value\n");
-                break;
-            }
-            x = atoi(p);
-            ll_head_insert(ll, x);
-            break;
-                
-        case 'T':
-            p = strchr(p, ' ');
-            if (!p) {
-                printf("ll_tail_insert - missing value\n");
-                break;
-            }
-            x = atoi(p);
-            ll_tail_insert(ll, x);
-            break;
-            
-         case 'D':
-            p = strchr(p, ' ');
-            if (!p) {
-                printf("ll_delete - missing value\n");
-                break;
-            }
-            x = atoi(p);
-            ll_delete(ll, x);
-            break;
-
-        case 'I':
-            p = strchr(p, ' ');
-            if (!p) {
-                printf("ll_ordered_insert - missing value\n");
-                break;
-            }
-            x = atoi(p);
-            ll_ordered_insert(ll, x);
-            break;
- 
-        default: printf("Unknown command\n");
-                
-        }
-    }
-
-    linkedlist_destroy(&ll);
-    
-    return EXIT_SUCCESS;
-}
-
-
-static void usage(char *pname)
-{
-  fprintf(stderr, "Usage: %s\n"
-          " Test linkedlist.  Call linkedlist_init_default upon startup and\n"
-          " linkedlist_destroy upon exit\n\n"
-          "  Accept commands from stdin:\n"
-          "    p    ll_print\n"
-          "    r    ll_reverse_print\n"
-          "    H nn ll_head_insert\n"
-          "    T nn ll_tail_insert\n"
-          "    D nn ll_delete\n"
-          "    I nn ll_ordered_insert\n"
-          "\n  Command line arguments:\n"
-          "    -?    Display this message\n"
-           , pname);
-  exit(1);
-}
-
-
-
-struct node;
-typedef struct node Node;
-
-struct node
-{
-    int data;
-    int id;
-    Node *next;
-    Node *prev;
-};
-
-struct linkedlist
-{
-    Node *head;
-    Node *tail;
-    int id;
-};
-
-typedef struct linkedlist linkedlist;
-
-static Node *new_node(linkedlist *pLinkedlist, int item)
-{
-    Node *pn = (Node *) malloc(sizeof(Node));
-
-    if (pn != NULL) {
-        pn->data = item;
-        pn->id = ++(pLinkedlist->id);
-        pn->next = NULL;
-        pn->prev = NULL;
-    }
-    return pn;
-}
-
-
-LINKEDLIST linkedlist_init_default(void)
-{
-    linkedlist *pLinkedlist;
-    pLinkedlist = (linkedlist *) malloc(sizeof(linkedlist));
-
-    if (NULL == pLinkedlist) {
-        fprintf(stderr, "linkedlist_init_default failed to allocate linkedlist\n");
+    if (list == NULL) {
         return NULL;
     }
 
-    pLinkedlist->head = NULL;
-    pLinkedlist->tail = NULL;
-    pLinkedlist->id = 0;
+    list->head = NULL;
+    list->tail = NULL;
+    list->count = 0;
 
-    return (LINKEDLIST) pLinkedlist;
+    return list;
 }
 
-void ll_head_insert(LINKEDLIST hLinkedlist, int item)
-{
-    linkedlist *pLinkedlist = (linkedlist *) hLinkedlist;
-    Node *pNew = new_node(pLinkedlist, item);
+Boolean list_is_empty(struct list *self) {
 
-    if (NULL == pNew) {
-        fprintf(stderr, "ll_head_insert failed to allocate a new node\n");
-        return;
+    if (self->head == NULL) {
+        return TRUE;
     }
-
-    if (pLinkedlist->head){
-        pLinkedlist->head->prev = pNew;
-    }
-    
-    pNew->next = pLinkedlist->head;
-    pNew->prev = NULL;
-    pLinkedlist->head = pNew;
-    if (pLinkedlist->tail == NULL) 
-        pLinkedlist->tail = pNew;
-    
+    return FALSE;
 }
 
-void ll_tail_insert(LINKEDLIST hLinkedlist, int item)
-{
-    linkedlist *pLinkedlist = (linkedlist *) hLinkedlist;
-    Node *pNew = new_node(pLinkedlist, item);
+void node_destroy(struct node *self) {
 
-    if (NULL == pNew) {
-        fprintf(stderr, "ll_tail_insert failed to allocate a new node\n");
-        return;
+    if (self->next != NULL) {
+        node_destroy(self->next);
     }
 
-    if (pLinkedlist->tail)
-        pLinkedlist->tail->next = pNew;
-    
-    pNew->prev = pLinkedlist->tail;
+    free(self);
+}
+
+void list_destroy(struct list **pself) {
+
+    struct list *list = *pself;
+    if(!list_is_empty(list)) {
+        node_destroy(list->head);
+    }
+
+    free(list);
+    *pself = NULL;
+}
+
+int list_length(struct list *self) {
+    return self->count;
+}
+
+
+int list_enqueue(struct list *self, int value){
+    struct node *node;
+
+    node = (struct node *)malloc(sizeof(struct node));
+
+    if (node == NULL) {
+        return -1;
+    }
+
+    node->data = value;
+    node->next = NULL;
+
+    if (list_is_empty(self)) {
+        self->head = node;
+        self->tail = node;
+        self->count = 1;
+        return 0;
+    }
    
-    pLinkedlist->tail = pNew;
-    if (pLinkedlist->head == NULL) 
-        pLinkedlist->head = pNew;
+    self->tail->next = node;
+    self->tail = node;
+    self->count++;
+
+    return 0;
 }
 
-void ll_ordered_insert(LINKEDLIST hLinkedlist, int item)
-{
-    linkedlist *pLinkedlist = (linkedlist *) hLinkedlist;
-    Node *pNew = new_node(pLinkedlist, item);
-    Node *pNode = pLinkedlist->head;
+int list_serve(struct list *self) {
+
+    struct node *node;
+
+    node = self->head;
+
+    self->head = self->head->next;
+
+    int save;
+    save = node->data;
+
+    free(node);
     
-
-    if (NULL == pNew) {
-        fprintf(stderr, "ll_ordered_insert failed to allocate a new node\n");
-        return;
-    }
-
-    if (NULL == pNode) {
-        pLinkedlist->head = pNew;
-        pLinkedlist->tail = pNew;
-        return;
-    }
-
-    while (pNode) {
-        if (pNode->data >= item) {     
-            if (pNode->prev)
-                pNode->prev->next = pNew;
-            else
-                pLinkedlist->head = pNew;
-
-            pNew->next = pNode;
-            pNode->prev = pNew;
-            return;
-        }
-        pNode = pNode->next;
-    }
-
-   
-    
-    pLinkedlist->tail->next = pNew;
-    pNew->prev = pLinkedlist->tail;
-    pLinkedlist->tail = pNew;
-}
-
-void ll_delete(LINKEDLIST hLinkedlist, int item)
-{
-   
-}
-
-void ll_print(LINKEDLIST hLinkedlist)
-{
-    linkedlist *pLinkedlist = (linkedlist *) hLinkedlist;
-    Node *pNode = pLinkedlist->head;
-
-    while (pNode) {
-        printf("%p id: %d value: %d\n", pNode, pNode->id, pNode->data);
-        pNode = pNode->next;
-    }
-}
-
-void ll_reverse_print(LINKEDLIST hLinkedlist)
-{
-    linkedlist *pLinkedlist = (linkedlist *) hLinkedlist;
-    Node *pNode = pLinkedlist->tail;
-
-    while (pNode) {
-        printf("%p id: %d value: %d\n", pNode, pNode->id, pNode->data);
-        pNode = pNode->prev;
-    }
-}
-
-void linkedlist_destroy(LINKEDLIST* phLinkedlist)
-{
-    linkedlist *pLinkedlist = (linkedlist *)*phLinkedlist;
-
-    Node *pNode = pLinkedlist->head;
-    Node *ptemp;
-    
-    while (pNode) {
-        ptemp = pNode;
-        pNode = pNode->next;
-        free (ptemp);
-    }
-    free (pLinkedlist);
-    *phLinkedlist = NULL;
+    self->count--;
+    return save;
 }
 
 void ferry_init(struct ferry *self, int size_in_meters) {
