@@ -64,8 +64,6 @@ int main(int argc, char *argv[]) {
 
         scanf("%d %d", &ferry_size_in_meters, &ncars);
         clear_keyboard_buffer();
-        printf("Ferry size = %d\n", ferry_size_in_meters);
-        printf("Number of cars = %d\n", ncars);
 
         ferry_init(&f, ferry_size_in_meters);
 
@@ -82,9 +80,6 @@ int main(int argc, char *argv[]) {
             } else {
                 list_enqueue(ll_right, car_size);
             }
-
-            printf("car size = %d\n", car_size);
-            printf("shore = %s\n", shore);
         }
 
         /*
