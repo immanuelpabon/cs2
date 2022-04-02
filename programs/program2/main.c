@@ -1,4 +1,9 @@
-/** Doublely linked list **/
+/***********************************************************
+Author: Immanuel Pabon
+Date: 4/1/2022
+Effort: 4 hours
+Purpose: Ferry some boats using a link list
+***********************************************************/
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -41,12 +46,14 @@ int main(int argc, char *argv[]) {
     char shore[1024];
     int i;
     int j;
-    
+    struct ferry f;
+
     
     scanf("%d", &ferry_sets);
     clear_keyboard_buffer();
     for (i=0; i < ferry_sets; i++){
-
+        LINKEDLIST ll_left = linkedlist_init_default();
+        LINKEDLIST ll_right = linkedlist_init_default();
         int ferry_size_in_meters;
         int ncars;
         int car_size;
@@ -56,14 +63,25 @@ int main(int argc, char *argv[]) {
         printf("Ferry size = %d\n", ferry_size_in_meters);
         printf("Number of cars = %d\n", ncars);
 
+        ferry_init(&f, ferry_size_in_meters);
+
         for (j=0; j<ncars; j++) {
 
             scanf("%d %s", &car_size, shore);
             clear_keyboard_buffer();
+            
+            if (strcmp(shore, "left")==0) {
+                ll_tail_insert(ll_left, car_size);
+            } else {
+                ll_tail_insert(ll_right, car_size);
+            }
 
             printf("car size = %d\n", car_size);
             printf("shore = %s\n", shore);
         }
+
+        linkedlist_destroy(&ll_left);
+        linkedlist_destroy(&ll_right);
     }
     
     return 0;
