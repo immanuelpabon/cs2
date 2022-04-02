@@ -36,10 +36,13 @@ int list_serve(struct list *self);
 void list_destroy(struct list **pself);
 int list_print(struct list *self);
 int list_length(struct list *self);
+int list_peek(struct list *self);
 Boolean list_is_empty(struct list *self);
 void ferry_init(struct ferry *self, int size_in_meters);
 Status ferry_add_car(struct ferry *self, int car_size);
 void ferry_remove_cars(struct ferry *self);
+Boolean ferry_check_size(struct ferry *self, int car_size);
+Boolean ferry_is_empty(struct ferry *self);
 void clear_keyboard_buffer(void);
 
 
@@ -88,9 +91,41 @@ int main(int argc, char *argv[]) {
          * simulate the ferry
          */
         int counter = 0;
+
+        while(!list_is_empty(ll_left) || !list_is_empty(ll_right)) {
+
+            /*
+             * starting on the left
+             */
+            while (!list_is_empty(ll_left) && 
+                ferry_check_size(&f, list_peek(ll_left)) == TRUE) {
+
+                ferry_add_car(&f, list_serve(ll_left));
+            }
+
+            if(ferry_is_empty(&f) && list_is_empty(ll_right)) {
+                break;
+            }
+            counter++;
+            ferry_remove_cars(&f);
+
+            while (!list_is_empty(ll_right) && 
+                ferry_check_size(&f, list_peek(ll_right)) == TRUE) {
+                
+                ferry_add_car(&f, list_serve(ll_right));
+            }
+
+            if(ferry_is_empty(&f) && list_is_empty(ll_left)) {
+                break;
+            }
+            counter++;
+            ferry_remove_cars(&f);
+        }
         
+        printf("%d\n", counter);
         list_destroy(&ll_left);
         list_destroy(&ll_right);
+
     }
     
     return 0;
@@ -188,6 +223,13 @@ int list_serve(struct list *self) {
     return save;
 }
 
+int list_peek(struct list *self) {
+    if(list_is_empty(self)) {
+        return -1;
+    }
+    return self->head->data;
+}
+
 void ferry_init(struct ferry *self, int size_in_meters) {
     self->size = size_in_meters * 100;
     self->used_size = 0;
@@ -206,6 +248,19 @@ void ferry_remove_cars(struct ferry *self){
     self->used_size = 0;
 }
 
+Boolean ferry_check_size(struct ferry *self, int car_size) {
+    if (self->used_size + car_size > self->size) {
+        return FALSE;
+    }
+    return TRUE;
+}
+
+Boolean ferry_is_empty(struct ferry *self) {
+    if (self->used_size == 0) {
+        return TRUE;
+    }
+    return FALSE;
+}
 
 void clear_keyboard_buffer(void) {
     char c;
